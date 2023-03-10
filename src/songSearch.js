@@ -6,27 +6,38 @@ import { AiFillCloseCircle, AiFillPlusCircle } from "react-icons/ai";
 const SongSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [songs, setSongs] = useState([]);
+  const [debounceTimerId, setDebounceTimerId] = useState(null);
 
-  const handleSearch = async () => {
-    var url = `https://api.deezer.com/search?q=${searchTerm}&limit=6`;
-    const response = await axios.get(url, {
-      withCredentials: false,
-      proxy: {
-        host: "cors-anywhere.herokuapp.com",
-        port: 443,
-      },
-    });
-    console.log(response.data.data);
-    setSongs(response.data.data);
+  const handleSearch = async (searchTerm) => {
+    if (searchTerm === "") {
+      setSongs([]);
+      return;
+    }
+
+    try {
+      const url = `https://proxy.cors.sh/https://api.deezer.com/search?q=${searchTerm}&limit=6`;
+      const response = await axios.get(url, {
+        withCredentials: false,
+        proxy: {
+          host: "cors-anywhere.herokuapp.com",
+          port: 443,
+        },
+      });
+      setSongs(response.data.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleInputChange = (event) => {
-    setSearchTerm(event.target.value);
-    handleSearch();
-    if (searchTerm === "") {
-      setSongs([]);
-    }
-    console.log(searchTerm);
+    const searchTerm = event.target.value;
+    setSearchTerm(searchTerm);
+    clearTimeout(debounceTimerId);
+    setDebounceTimerId(
+      setTimeout(() => {
+        handleSearch(searchTerm);
+      }, 500)
+    );
   };
 
   const selectSong = (song) => {
