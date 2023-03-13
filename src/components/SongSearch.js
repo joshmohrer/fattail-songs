@@ -1,14 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { AiFillCloseCircle } from "react-icons/ai";
 import axios from "axios";
-import addSong from "./components/AddSong";
-import { AiFillCloseCircle, AiFillPlusCircle } from "react-icons/ai";
+import toast, { Toaster } from "react-hot-toast";
+import AddSong from "./AddSong";
 
-const SongSearch = () => {
+const SongSearch = (username) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [songs, setSongs] = useState([]);
   const [debounceTimerId, setDebounceTimerId] = useState(null);
 
+  const searchComplete = () => toast.success("Search complete!");
+  const notify2 = () => toast.success("Song added!");
+
+  // useEffect(() => {
+  //   if (searching) {
+  //     toast.loading("Loading...");
+  //   } else {
+  //     toast.dismiss();
+  //   }
+  // }, [searching]);
+
   const handleSearch = async (searchTerm) => {
+    const notify = toast.loading("Searching songs...");
+
     if (searchTerm === "") {
       setSongs([]);
       return;
@@ -16,13 +30,14 @@ const SongSearch = () => {
 
     try {
       const url = `https://proxy.cors.sh/https://api.deezer.com/search?q=${searchTerm}&limit=6`;
-      const response = await axios.get(url, {
-        withCredentials: false,
-        proxy: {
-          host: "cors-anywhere.herokuapp.com",
-          port: 443,
+      const config = {
+        headers: {
+          "x-cors-api-key": "temp_683b2273f9ecad35e545cdfca91dfada",
         },
-      });
+      };
+      const response = await axios.get(url, config);
+      toast.dismiss(notify);
+      searchComplete();
       setSongs(response.data.data);
     } catch (error) {
       console.error(error);
@@ -40,23 +55,25 @@ const SongSearch = () => {
     );
   };
 
-  const selectSong = (song) => {
-    console.log(song);
-    addSong(song);
-  };
-
   const clearSearch = () => {
     setSearchTerm("");
     setSongs([]);
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col">
-      <form text-3xl>
+      <form className="text-2xl">
         <div className="text flex flex-1 flex-row m-5 max-w-full">
           <input
+            onKeyDown={handleKeyDown}
             type="text"
-            className="border-2 border-slate-900 "
+            className="w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
             value={searchTerm}
             onChange={handleInputChange}
           />
@@ -64,11 +81,18 @@ const SongSearch = () => {
         </div>
         {/* <button type="submit">Search</button> */}
       </form>
-      <div className="grid grid-cols-6 m-4">
+      <div className="grid grid-cols-3 m-4 align-top">
         {Array.isArray(songs) &&
           songs.map((song) => (
-            <button onClick={() => selectSong(song)}>
-              <div key={song.id} className="m-4">
+            <button
+              onClick={() => {
+                AddSong(song, username);
+                notify2();
+                clearSearch();
+              }}
+              className="hover:bg-violet-300"
+            >
+              <div key={song.id} className="m-4 flex flex-col items-center">
                 <img
                   src={song.album.cover_medium}
                   alt={`${song.title} album artwork`}
@@ -83,6 +107,7 @@ const SongSearch = () => {
             </button>
           ))}
       </div>
+      <Toaster />
     </div>
   );
 };
