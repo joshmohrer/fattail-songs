@@ -2,8 +2,6 @@ import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase";
 
 const AddSong = async (song, userName) => {
-  console.log("songName", song);
-  console.log("username", userName);
   const voters = [];
   var suggested = "";
   suggested = userName.userName;
@@ -16,6 +14,9 @@ const AddSong = async (song, userName) => {
     votes: 1,
     voters: voters,
     suggested: suggested,
+    vetoer: null,
+    vetoed: false,
+    preview: song.preview,
   });
   console.log("addsong", userName);
 

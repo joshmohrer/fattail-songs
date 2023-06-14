@@ -36,6 +36,7 @@ const SongSearch = (username) => {
         },
       };
       const response = await axios.get(url, config);
+      console.log(response);
       toast.dismiss(notify);
       searchComplete();
       setSongs(response.data.data);
@@ -73,11 +74,17 @@ const SongSearch = (username) => {
           <input
             onKeyDown={handleKeyDown}
             type="text"
-            className="w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Search for a song"
+            className="w-full p-2 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
             value={searchTerm}
             onChange={handleInputChange}
           />
-          <AiFillCloseCircle onClick={clearSearch} />
+
+          <AiFillCloseCircle
+            className="px-2"
+            style={{ fontSize: "48px" }}
+            onClick={clearSearch}
+          />
         </div>
         {/* <button type="submit">Search</button> */}
       </form>
